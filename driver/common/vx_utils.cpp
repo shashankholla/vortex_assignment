@@ -136,6 +136,7 @@ extern int vx_dump_perf(vx_device_h device, FILE* stream) {
   uint64_t mem_reads = 0;
   uint64_t mem_writes = 0;
   uint64_t mem_lat = 0;
+  uint64_t dup_mem = 0;
 #ifdef EXT_TEX_ENABLE
   // PERF: texunit
   uint64_t tex_mem_reads = 0;
@@ -253,6 +254,10 @@ extern int vx_dump_perf(vx_device_h device, FILE* stream) {
     uint64_t dcache_mshr_st_per_core = get_csr_64(staging_ptr, CSR_MPM_DCACHE_MSHR_ST);
     if (num_cores > 1) fprintf(stream, "PERF: core%d: dcache mshr stalls=%ld\n", core_id, dcache_mshr_st_per_core);
     dcache_mshr_stalls += dcache_mshr_st_per_core; 
+
+    uint64_t dup_mem_per_core = get_csr_64(staging_ptr, CSR_MPM_DUP_MEM);
+    if (num_cores > 1) fprintf(stream, "PERF: core%d: dup_mem_this_core=%ld\n", core_id, dup_mem_per_core);
+    dup_mem += dup_mem_per_core;
 
     // PERF: SMEM
     // total reads

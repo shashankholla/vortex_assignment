@@ -149,6 +149,8 @@ module VX_csr_data #(
             
         `ifdef PERF_ENABLE
             // PERF: pipeline
+            `CSR_MPM_DUP_MEM     : read_data_r = perf_memsys_if.dup[31:0];
+            `CSR_MPM_DUP_MEM_H   : read_data_r = 32'(perf_memsys_if.dup[`PERF_CTR_BITS-1:32]);
             `CSR_MPM_IBUF_ST    : read_data_r = perf_pipeline_if.ibf_stalls[31:0];
             `CSR_MPM_IBUF_ST_H  : read_data_r = 32'(perf_pipeline_if.ibf_stalls[`PERF_CTR_BITS-1:32]);
             `CSR_MPM_SCRB_ST    : read_data_r = perf_pipeline_if.scb_stalls[31:0];

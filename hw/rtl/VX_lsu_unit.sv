@@ -13,6 +13,11 @@ module VX_lsu_unit #(
     VX_dcache_rsp_if.slave  dcache_rsp_if,
 
     // inputs
+    `ifdef PERF_ENABLE
+        VX_perf_memsys_if     perf_memsys_if,
+    `endif
+
+
     VX_lsu_req_if.slave     lsu_req_if,
 
     // outputs
@@ -39,6 +44,9 @@ module VX_lsu_unit #(
     wire [31:0]                   req_pc;
     wire                          req_is_dup;
     wire                          req_is_prefetch;
+
+    
+
     
     wire mbuf_empty;
 
@@ -176,6 +184,19 @@ module VX_lsu_unit #(
             end
         end
     end
+`ifdef PERF_ENABLE
+    reg [`PERF_CTR_BITS-1:0] dup_mem_cnt;
+    assign perf_memsys_if.dup = dup_mem_cnt;
+    always @(posedge clk) begin
+            if (reset) begin
+                dup_mem_cnt <= 0;
+            end else
+            begin
+                dup_mem_cnt <= req_is_dup ? dup_mem_cnt+ `PERF_CTR_BITS'd1 : dup_mem_cnt;
+            end
+    end
+`endif
+
 
     // need to hold the acquired tag index until the full request is submitted
     reg [`LSUQ_ADDR_BITS-1:0] req_tag_hold;
