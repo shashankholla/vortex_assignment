@@ -23,6 +23,13 @@ module VX_issue #(
 `endif
     VX_gpu_req_if.master    gpu_req_if
 );
+
+`ifdef PERF_ENABLE
+    reg [`PERF_CTR_BITS-1:0] perf_active_threads;
+    assign perf_issue_if.active_threads = perf_active_threads;
+`endif
+
+
     VX_ibuffer_if   ibuffer_if();    
     VX_gpr_req_if   gpr_req_if();
     VX_gpr_rsp_if   gpr_rsp_if();
@@ -80,6 +87,19 @@ module VX_issue #(
     `RESET_RELAY (scoreboard_reset);
     `RESET_RELAY (gpr_reset);
     `RESET_RELAY (dispatch_reset);
+
+    
+    always@(posedge clk) begin
+        if(reset) perf_active_threads <= `PERF_CTR_BITS'b0;
+        else
+            begin
+                if(ibuffer_if.valid && ibuffer_if.ready)
+                    for (integer i = 0; i < `NUM_THREADS; ++i) begin
+                        perf_active_threads <= perf_active_threads + (ibuffer_if.tmask[i] ? `PERF_CTR_BITS'b1 : `PERF_CTR_BITS'b0);
+                    end
+            end
+    end
+
 
     VX_ibuffer #(
         .CORE_ID(CORE_ID)
